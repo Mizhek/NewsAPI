@@ -1,15 +1,19 @@
 package com.example.newsapi.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,21 +31,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-//
-///**
-// * A simple {@link Fragment} subclass.
-// * Activities that contain this fragment must implement the
-// * {@link MainFragment.OnFragmentInteractionListener} interface
-// * to handle interaction events.
-// */
 public class MainFragment extends Fragment {
 
+    public static final String TAG = "Main fragment";
+    private static final String RECYCLER_VISIBILITY = "recycler_visibility";
     private ArticlesViewModel mArticlesViewModel;
     private RecyclerView mRecycler;
     private ArticlesAdapter mAdapter;
 
+    private ProgressBar mProgressBar;
+    private View mView;
 
-//    private OnFragmentInteractionListener mListener;
 
     public MainFragment() {
         // Required empty public constructor
@@ -50,6 +50,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
 
         mArticlesViewModel = ViewModelProviders.of(this).get(ArticlesViewModel.class);
         if (mArticlesViewModel.getArticles().isEmpty()) {
@@ -70,8 +71,13 @@ public class MainFragment extends Fragment {
                     if (newsApiResponses[0] != null) {
                         articles.addAll(newsApiResponses[0].getArticles());
                     }
-                    if (mRecycler != null) {
+                    if (mRecycler != null &&
+                            mAdapter != null &&
+                            mProgressBar != null) {
+
                         mAdapter.notifyDataSetChanged();
+                        mProgressBar.setVisibility(View.GONE);
+                        mRecycler.setVisibility(View.VISIBLE);
                     }
                 }
 
@@ -85,61 +91,75 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState: ");
+
+        if (mRecycler != null) {
+            if (mRecycler.getVisibility() == View.VISIBLE) {
+                outState.putBoolean(RECYCLER_VISIBILITY, true);
+            } else {
+                outState.putBoolean(RECYCLER_VISIBILITY, false);
+            }
+        }
+
+
+    }
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        Log.d(TAG, "onCreateView: ");
 
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
+
+        if (mView == null) {
+            mView = inflater.inflate(R.layout.fragment_main, container, false);
+        }
+
+        mProgressBar = mView.findViewById(R.id.progressBar);
+        Toolbar toolbar = mView.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
 
-        mRecycler = view.findViewById(R.id.recycler_articles);
+        mRecycler = mView.findViewById(R.id.recycler_articles);
         mAdapter = new ArticlesAdapter();
         mAdapter.setArticles(mArticlesViewModel.getArticles());
         mRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        mAdapter.setOnItemClickListener(new ArticlesAdapter.ArticleClickListener() {
+            @Override
+            public void onArticleClick(int position) {
+                navigateToDetails(position);
+            }
+
+        });
         mRecycler.setAdapter(mAdapter);
-
-
-        return view;
+        return mView;
     }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated: ");
+
+        if (savedInstanceState != null) {
+            if (mArticlesViewModel.getArticles().size() != 0) {
+                mProgressBar.setVisibility(View.GONE);
+                mRecycler.setVisibility(View.VISIBLE);
+            }
+        }
+
+    }
+
+    private void navigateToDetails(int position) {
+
+        Bundle args = new Bundle();
+        args.putSerializable(DetailsFragment.ARTICLE_TRANSFER, mAdapter.getArticle(position));
+
+        Navigation.findNavController(mRecycler)
+                .navigate(R.id.action_mainFragment_to_detailsFragment, args);
+    }
+
+
 }
 
 
-//    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
-
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-////        if (context instanceof OnFragmentInteractionListener) {
-////            mListener = (OnFragmentInteractionListener) context;
-////        } else {
-////            throw new RuntimeException(context.toString()
-////                    + " must implement OnFragmentInteractionListener");
-////        }
-//    }
-
-//    @Override
-//    public void onDetach() {
-//        super.onDetach();
-//        mListener = null;
-//    }
-
-//    /**
-//     * This interface must be implemented by activities that contain this
-//     * fragment to allow an interaction in this fragment to be communicated
-//     * to the activity and potentially other fragments contained in that
-//     * activity.
-//     * <p>
-//     * See the Android Training lesson <a href=
-//     * "http://developer.android.com/training/basics/fragments/communicating.html"
-//     * >Communicating with Other Fragments</a> for more information.
-//     */
-//    public interface OnFragmentInteractionListener {
-//        // TODO: Update argument type and name
-//        void onFragmentInteraction(Uri uri);
-//    }
-//}

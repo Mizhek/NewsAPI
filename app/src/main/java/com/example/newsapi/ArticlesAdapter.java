@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,13 +15,20 @@ import com.example.newsapi.data.Article;
 
 import java.util.List;
 
+
 public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyViewHolder> {
 
     private List<Article> mArticles;
+    private ArticleClickListener mListener = null;
+
+    void attachListener(ArticleClickListener listener) {
+        this.mListener = listener;
+    }
 
     public void setArticles(List<Article> articles) {
         mArticles = articles;
     }
+
 
     @NonNull
     @Override
@@ -34,9 +42,21 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyView
         holder.bind(position);
     }
 
+    public Article getArticle(int position) {
+        return mArticles.get(position);
+    }
+
     @Override
     public int getItemCount() {
         return ((mArticles != null) && (mArticles.size() != 0) ? mArticles.size() : 1);
+    }
+
+    public void setOnItemClickListener(ArticleClickListener listener) {
+        this.mListener = listener;
+    }
+
+    public interface ArticleClickListener {
+        void onArticleClick(int position);
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -45,6 +65,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyView
         TextView txtTitle;
         TextView txtDate;
         TextView txtSource;
+        LinearLayout mItem;
 
 
         MyViewHolder(@NonNull View itemView) {
@@ -53,10 +74,11 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyView
             this.txtTitle = itemView.findViewById(R.id.txt_title);
             this.txtDate = itemView.findViewById(R.id.txt_date);
             this.txtSource = itemView.findViewById(R.id.txt_source);
+            this.mItem = itemView.findViewById(R.id.container);
 
         }
 
-        public void bind(int position) {
+        public void bind(final int position) {
 
             if (mArticles.size() != 0 && mArticles != null) {
                 Article article = mArticles.get(position);
@@ -86,11 +108,18 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyView
                             .error(R.drawable.image_error_placeholder)
                             .into(imgThumbnail);
                 } else {
-                    txtTitle.setMaxLines(3);
                     imgThumbnail.setVisibility(View.GONE);
                 }
             }
 
+            mItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onArticleClick(position);
+                    }
+                }
+            });
 
         }
     }

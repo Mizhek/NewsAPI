@@ -12,10 +12,10 @@
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainFragment">
+        tools:context=".fragments.MainFragment">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycle_news"
+            android:id="@+id/recycler_articles"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:padding="8dp"

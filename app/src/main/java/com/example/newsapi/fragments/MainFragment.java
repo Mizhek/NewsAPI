@@ -1,7 +1,6 @@
 package com.example.newsapi.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.newsapi.ArticlesAdapter;
 import com.example.newsapi.MyApplication;
 import com.example.newsapi.R;
 import com.example.newsapi.data.Article;
@@ -36,7 +37,8 @@ import retrofit2.Response;
 public class MainFragment extends Fragment {
 
     private ArticlesViewModel mArticlesViewModel;
-    private RecyclerView mArticlesRecycle;
+    private RecyclerView mRecycler;
+    private ArticlesAdapter mAdapter;
 
 
 //    private OnFragmentInteractionListener mListener;
@@ -61,19 +63,16 @@ public class MainFragment extends Fragment {
         final List<Article> articles = new ArrayList<>();
 
         if (articles.isEmpty()) {
-            MyApplication.getNewsApi().getArticles("us", "e5c3a6fbf81341fa84a8f45a1c3db179").enqueue(new Callback<NewsApiResponse>() {
+            MyApplication.getNewsApi().getArticles("us", 100, "e5c3a6fbf81341fa84a8f45a1c3db179").enqueue(new Callback<NewsApiResponse>() {
                 @Override
                 public void onResponse(Call<NewsApiResponse> call, Response<NewsApiResponse> response) {
                     newsApiResponses[0] = response.body();
                     if (newsApiResponses[0] != null) {
                         articles.addAll(newsApiResponses[0].getArticles());
                     }
-                    if (mArticlesRecycle != null) {
-
+                    if (mRecycler != null) {
+                        mAdapter.notifyDataSetChanged();
                     }
-                    Log.d("Response", "onResponse: " + articles.get(0).getTitle());
-                    Log.d("Response", "onResponse: " + articles.get(1).getTitle());
-                    Log.d("Response", "onResponse: " + articles.get(2).getTitle());
                 }
 
                 @Override
@@ -90,10 +89,14 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mArticlesRecycle = view.findViewById(R.id.recycler_articles);
-
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
+
+        mRecycler = view.findViewById(R.id.recycler_articles);
+        mAdapter = new ArticlesAdapter();
+        mAdapter.setArticles(mArticlesViewModel.getArticles());
+        mRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecycler.setAdapter(mAdapter);
 
 
         return view;

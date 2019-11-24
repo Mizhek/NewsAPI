@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.newsapi.data.apiResponse.Article;
 
 import java.util.List;
@@ -104,6 +105,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.MyView
                     imgThumbnail.setVisibility(View.VISIBLE);
                     Glide.with(imgThumbnail.getContext())
                             .load(imgUrl)
+                            .apply(RequestOptions.sizeMultiplierOf(0.5f))
                             .placeholder(R.drawable.image_placeholder)
                             .error(R.drawable.image_error_placeholder)
                             .into(imgThumbnail);

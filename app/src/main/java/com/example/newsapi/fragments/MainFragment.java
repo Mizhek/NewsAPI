@@ -3,6 +3,8 @@ package com.example.newsapi.fragments;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.newsapi.ArticlesAdapter;
+import com.example.newsapi.MainActivity;
 import com.example.newsapi.MyApplication;
 import com.example.newsapi.R;
 import com.example.newsapi.data.ArticlesViewModel;
@@ -33,12 +36,13 @@ import retrofit2.Response;
 
 public class MainFragment extends Fragment {
 
-    public static final String TAG = "Main fragment";
+    static final String TAG = "Main fragment";
     private static final String RECYCLER_VISIBILITY = "recycler_visibility";
     private ArticlesViewModel mArticlesViewModel;
     private RecyclerView mRecycler;
     private ArticlesAdapter mAdapter;
 
+    Toolbar mToolbar;
     private ProgressBar mProgressBar;
     private View mView;
 
@@ -56,6 +60,12 @@ public class MainFragment extends Fragment {
         if (mArticlesViewModel.getArticles().isEmpty()) {
             mArticlesViewModel.setArticles(downloadData());
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.menu, menu);
     }
 
     private List<Article> downloadData() {
@@ -112,14 +122,14 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
 
-
         if (mView == null) {
             mView = inflater.inflate(R.layout.fragment_main, container, false);
         }
 
         mProgressBar = mView.findViewById(R.id.progressBar);
-        Toolbar toolbar = mView.findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.app_name);
+
+
+        setupToolbarWithMenu();
 
         mRecycler = mView.findViewById(R.id.recycler_articles);
         mAdapter = new ArticlesAdapter();
@@ -134,6 +144,13 @@ public class MainFragment extends Fragment {
         });
         mRecycler.setAdapter(mAdapter);
         return mView;
+    }
+
+    private void setupToolbarWithMenu() {
+        mToolbar = mView.findViewById(R.id.toolbar);
+        mToolbar.setTitle(R.string.app_name);
+        ((MainActivity) getActivity()).setSupportActionBar(mToolbar);
+        setHasOptionsMenu(true);
     }
 
     @Override

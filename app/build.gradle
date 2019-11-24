@@ -46,4 +46,5 @@ dependencies {
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.preference:preference:1.1.0'
 }

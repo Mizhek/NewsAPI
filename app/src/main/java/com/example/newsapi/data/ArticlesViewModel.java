@@ -2,6 +2,8 @@ package com.example.newsapi.data;
 
 import androidx.lifecycle.ViewModel;
 
+import com.example.newsapi.data.apiResponse.Article;
+
 import java.util.ArrayList;
 import java.util.List;
 

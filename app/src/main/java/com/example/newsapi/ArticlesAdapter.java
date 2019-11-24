@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.newsapi.data.Article;
+import com.example.newsapi.data.apiResponse.Article;
 
 import java.util.List;
 

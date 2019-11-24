@@ -15,7 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.example.newsapi.R;
-import com.example.newsapi.data.Article;
+import com.example.newsapi.data.apiResponse.Article;
 
 
 public class DetailsFragment extends Fragment {

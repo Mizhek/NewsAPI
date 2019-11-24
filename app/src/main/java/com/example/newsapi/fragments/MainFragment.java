@@ -20,9 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.newsapi.ArticlesAdapter;
 import com.example.newsapi.MyApplication;
 import com.example.newsapi.R;
-import com.example.newsapi.data.Article;
 import com.example.newsapi.data.ArticlesViewModel;
-import com.example.newsapi.data.NewsApiResponse;
+import com.example.newsapi.data.apiResponse.Article;
+import com.example.newsapi.data.apiResponse.NewsApiResponse;
 
 import java.util.ArrayList;
 import java.util.List;

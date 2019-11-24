@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -42,7 +43,10 @@ public class MainFragment extends Fragment {
     private RecyclerView mRecycler;
     private ArticlesAdapter mAdapter;
 
-    Toolbar mToolbar;
+    private final String mApiKey = "e5c3a6fbf81341fa84a8f45a1c3db179";
+    private String mCountryCode;
+    private int mArticlesNumber;
+    private Toolbar mToolbar;
     private ProgressBar mProgressBar;
     private View mView;
 
@@ -56,6 +60,9 @@ public class MainFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
+        mCountryCode = "ca";
+        mArticlesNumber = 20;
+
         mArticlesViewModel = ViewModelProviders.of(this).get(ArticlesViewModel.class);
         if (mArticlesViewModel.getArticles().isEmpty()) {
             mArticlesViewModel.setArticles(downloadData());
@@ -64,8 +71,67 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        menu.clear();
         inflater.inflate(R.menu.menu, menu);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        switch (mCountryCode) {
+            case "us":
+                menu.findItem(R.id.country_us).setChecked(true);
+                break;
+            case "ua":
+                menu.findItem(R.id.country_ua).setChecked(true);
+                break;
+            case "ca":
+                menu.findItem(R.id.country_ca).setChecked(true);
+                break;
+        }
+
+        switch (mArticlesNumber) {
+            case 20:
+                menu.findItem(R.id.number_20).setChecked(true);
+                break;
+            case 50:
+                menu.findItem(R.id.number_50).setChecked(true);
+                break;
+            case 100:
+                menu.findItem(R.id.number_100).setChecked(true);
+                break;
+        }
+
+
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.country_us:
+                mCountryCode = "us";
+                break;
+            case R.id.country_ua:
+                mCountryCode = "ua";
+                break;
+            case R.id.country_ca:
+                mCountryCode = "ca";
+                break;
+            case R.id.number_20:
+                mArticlesNumber = 20;
+                break;
+            case R.id.number_50:
+                mArticlesNumber = 50;
+                break;
+            case R.id.number_100:
+                mArticlesNumber = 100;
+                break;
+        }
+
+        getActivity().invalidateOptionsMenu();
+        return true;
     }
 
     private List<Article> downloadData() {
@@ -74,30 +140,36 @@ public class MainFragment extends Fragment {
         final List<Article> articles = new ArrayList<>();
 
         if (articles.isEmpty()) {
-            MyApplication.getNewsApi().getArticles("us", 100, "e5c3a6fbf81341fa84a8f45a1c3db179").enqueue(new Callback<NewsApiResponse>() {
-                @Override
-                public void onResponse(Call<NewsApiResponse> call, Response<NewsApiResponse> response) {
-                    newsApiResponses[0] = response.body();
-                    if (newsApiResponses[0] != null) {
-                        articles.addAll(newsApiResponses[0].getArticles());
-                    }
-                    if (mRecycler != null &&
-                            mAdapter != null &&
-                            mProgressBar != null) {
+            MyApplication.getNewsApi()
+                    .getArticles(mCountryCode, mArticlesNumber, mApiKey)
+                    .enqueue(new Callback<NewsApiResponse>() {
+                        @Override
+                        public void onResponse(Call<NewsApiResponse> call, Response<NewsApiResponse> response) {
+                            newsApiResponses[0] = response.body();
+                            if (newsApiResponses[0] != null) {
+                                articles.addAll(newsApiResponses[0].getArticles());
+                            }
+                            if (mRecycler != null &&
+                                    mAdapter != null &&
+                                    mProgressBar != null) {
 
-                        mAdapter.notifyDataSetChanged();
-                        mProgressBar.setVisibility(View.GONE);
-                        mRecycler.setVisibility(View.VISIBLE);
-                    }
-                }
+                                mAdapter.notifyDataSetChanged();
+                                showRecycler();
+                            }
+                        }
 
-                @Override
-                public void onFailure(Call<NewsApiResponse> call, Throwable t) {
-                    Toast.makeText(getContext(), "Download error", Toast.LENGTH_SHORT).show();
-                }
-            });
+                        @Override
+                        public void onFailure(Call<NewsApiResponse> call, Throwable t) {
+                            Toast.makeText(getContext(), "Download error", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
         return articles;
+    }
+
+    private void showRecycler() {
+        mProgressBar.setVisibility(View.GONE);
+        mRecycler.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -151,6 +223,7 @@ public class MainFragment extends Fragment {
         mToolbar.setTitle(R.string.app_name);
         ((MainActivity) getActivity()).setSupportActionBar(mToolbar);
         setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -160,8 +233,7 @@ public class MainFragment extends Fragment {
 
         if (savedInstanceState != null) {
             if (mArticlesViewModel.getArticles().size() != 0) {
-                mProgressBar.setVisibility(View.GONE);
-                mRecycler.setVisibility(View.VISIBLE);
+                showRecycler();
             }
         }
 

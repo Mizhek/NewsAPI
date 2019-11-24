@@ -38,6 +38,8 @@
                 android:textAppearance="@android:style/TextAppearance.Large"
                 android:textSize="20sp"
                 android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
                 tools:text="Title" />
 
             <TextView

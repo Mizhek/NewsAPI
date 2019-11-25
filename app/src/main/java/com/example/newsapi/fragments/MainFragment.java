@@ -3,7 +3,6 @@ package com.example.newsapi.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,8 +38,6 @@ import retrofit2.Response;
 
 public class MainFragment extends Fragment {
 
-    static final String TAG = "Main fragment";
-
     private static final String APP_PREF = "preferences";
     private static final String COUNTRY_PREF = "country";
     private static final String ARTICLES_NUMBER_PREF = "number";
@@ -64,17 +61,22 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: ");
 
-        SharedPreferences preferences = getActivity().getSharedPreferences(APP_PREF, Context.MODE_PRIVATE);
-        mCountryCode = preferences.getString(COUNTRY_PREF, "us");
-        mArticlesNumber = preferences.getInt(ARTICLES_NUMBER_PREF, 20);
+        setupPreferences();
+        setupArticlesViewModel();
+    }
 
-
+    private void setupArticlesViewModel() {
         mArticlesViewModel = ViewModelProviders.of(this).get(ArticlesViewModel.class);
         if (mArticlesViewModel.isEmpty()) {
             mArticlesViewModel.setArticles(downloadData());
         }
+    }
+
+    private void setupPreferences() {
+        SharedPreferences preferences = getActivity().getSharedPreferences(APP_PREF, Context.MODE_PRIVATE);
+        mCountryCode = preferences.getString(COUNTRY_PREF, "us");
+        mArticlesNumber = preferences.getInt(ARTICLES_NUMBER_PREF, 20);
     }
 
     @Override
@@ -233,21 +235,20 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: ");
 
         if (mView == null) {
             mView = inflater.inflate(R.layout.fragment_main, container, false);
         }
 
         mProgressBar = mView.findViewById(R.id.progressBar);
-
+        mRecycler = mView.findViewById(R.id.recycler_articles);
 
         setupToolbarWithMenu();
 
-        mRecycler = mView.findViewById(R.id.recycler_articles);
         mAdapter = new ArticlesAdapter();
         mAdapter.setArticles(mArticlesViewModel.getArticles());
         mRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+
         mAdapter.setOnItemClickListener(new ArticlesAdapter.ArticleClickListener() {
             @Override
             public void onArticleClick(int position) {
@@ -256,6 +257,7 @@ public class MainFragment extends Fragment {
 
         });
         mRecycler.setAdapter(mAdapter);
+
         return mView;
     }
 
@@ -270,14 +272,11 @@ public class MainFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated: ");
-
         if (savedInstanceState != null) {
             if (mArticlesViewModel.getArticles().size() != 0) {
                 showRecycler();
             }
         }
-
     }
 
     private void navigateToDetails(int position) {

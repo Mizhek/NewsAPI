@@ -21,4 +21,12 @@ public class ArticlesViewModel extends ViewModel {
     public void setArticles(List<Article> articles) {
         mArticles = articles;
     }
+
+    public void clearArticles() {
+        mArticles.clear();
+    }
+
+    public boolean isEmpty() {
+        return mArticles.isEmpty();
+    }
 }

@@ -60,11 +60,11 @@ public class MainFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
-        mCountryCode = "ca";
+        mCountryCode = "us";
         mArticlesNumber = 20;
 
         mArticlesViewModel = ViewModelProviders.of(this).get(ArticlesViewModel.class);
-        if (mArticlesViewModel.getArticles().isEmpty()) {
+        if (mArticlesViewModel.isEmpty()) {
             mArticlesViewModel.setArticles(downloadData());
         }
     }
@@ -111,33 +111,57 @@ public class MainFragment extends Fragment {
 
         switch (id) {
             case R.id.country_us:
-                mCountryCode = "us";
+                changeCountryCode("us");
                 break;
             case R.id.country_ua:
-                mCountryCode = "ua";
+                changeCountryCode("ua");
                 break;
             case R.id.country_ca:
-                mCountryCode = "ca";
+                changeCountryCode("ca");
                 break;
             case R.id.number_20:
-                mArticlesNumber = 20;
+                changeArticlesNumber(20);
                 break;
             case R.id.number_50:
-                mArticlesNumber = 50;
+                changeArticlesNumber(50);
                 break;
             case R.id.number_100:
-                mArticlesNumber = 100;
+                changeArticlesNumber(100);
                 break;
         }
 
         getActivity().invalidateOptionsMenu();
         return true;
+
+    }
+
+    private void changeArticlesNumber(int number) {
+        mArticlesNumber = number;
+
+        downloadAndApplyNewArticles();
+    }
+
+    private void changeCountryCode(String code) {
+        mCountryCode = code;
+
+        downloadAndApplyNewArticles();
+    }
+
+    private void downloadAndApplyNewArticles() {
+        if (!mArticlesViewModel.isEmpty()) {
+            mArticlesViewModel.clearArticles();
+            mArticlesViewModel.setArticles(downloadData());
+            mAdapter.setArticles(mArticlesViewModel.getArticles());
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     private List<Article> downloadData() {
 
         final NewsApiResponse[] newsApiResponses = {new NewsApiResponse()};
         final List<Article> articles = new ArrayList<>();
+
+        showLoader();
 
         if (articles.isEmpty()) {
             MyApplication.getNewsApi()
@@ -168,8 +192,18 @@ public class MainFragment extends Fragment {
     }
 
     private void showRecycler() {
-        mProgressBar.setVisibility(View.GONE);
-        mRecycler.setVisibility(View.VISIBLE);
+        if (mRecycler != null && mProgressBar != null) {
+            mProgressBar.setVisibility(View.GONE);
+            mRecycler.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showLoader() {
+
+        if (mRecycler != null && mProgressBar != null) {
+            mRecycler.setVisibility(View.GONE);
+            mProgressBar.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

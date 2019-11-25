@@ -1,5 +1,7 @@
 package com.example.newsapi.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,14 +40,18 @@ import retrofit2.Response;
 public class MainFragment extends Fragment {
 
     static final String TAG = "Main fragment";
-    private static final String RECYCLER_VISIBILITY = "recycler_visibility";
+
+    private static final String APP_PREF = "preferences";
+    private static final String COUNTRY_PREF = "country";
+    private static final String ARTICLES_NUMBER_PREF = "number";
+    private final String mApiKey = "e5c3a6fbf81341fa84a8f45a1c3db179";
+
     private ArticlesViewModel mArticlesViewModel;
     private RecyclerView mRecycler;
     private ArticlesAdapter mAdapter;
-
-    private final String mApiKey = "e5c3a6fbf81341fa84a8f45a1c3db179";
     private String mCountryCode;
     private int mArticlesNumber;
+
     private Toolbar mToolbar;
     private ProgressBar mProgressBar;
     private View mView;
@@ -60,8 +66,10 @@ public class MainFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
-        mCountryCode = "us";
-        mArticlesNumber = 20;
+        SharedPreferences preferences = getActivity().getSharedPreferences(APP_PREF, Context.MODE_PRIVATE);
+        mCountryCode = preferences.getString(COUNTRY_PREF, "us");
+        mArticlesNumber = preferences.getInt(ARTICLES_NUMBER_PREF, 20);
+
 
         mArticlesViewModel = ViewModelProviders.of(this).get(ArticlesViewModel.class);
         if (mArticlesViewModel.isEmpty()) {
@@ -135,15 +143,15 @@ public class MainFragment extends Fragment {
 
     }
 
-    private void changeArticlesNumber(int number) {
-        mArticlesNumber = number;
-
+    private void changeCountryCode(String code) {
+        mCountryCode = code;
+        saveToSharedPreferences(COUNTRY_PREF, code);
         downloadAndApplyNewArticles();
     }
 
-    private void changeCountryCode(String code) {
-        mCountryCode = code;
-
+    private void changeArticlesNumber(int number) {
+        mArticlesNumber = number;
+        saveToSharedPreferences(ARTICLES_NUMBER_PREF, String.valueOf(number));
         downloadAndApplyNewArticles();
     }
 
@@ -206,20 +214,19 @@ public class MainFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d(TAG, "onSaveInstanceState: ");
-
-        if (mRecycler != null) {
-            if (mRecycler.getVisibility() == View.VISIBLE) {
-                outState.putBoolean(RECYCLER_VISIBILITY, true);
-            } else {
-                outState.putBoolean(RECYCLER_VISIBILITY, false);
-            }
+    private void saveToSharedPreferences(String pref, String value) {
+        SharedPreferences preferences = getActivity().getSharedPreferences(APP_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        switch (pref) {
+            case COUNTRY_PREF:
+                editor.putString(COUNTRY_PREF, value);
+                break;
+            case ARTICLES_NUMBER_PREF:
+                int num = Integer.parseInt(value);
+                editor.putInt(ARTICLES_NUMBER_PREF, num);
+                break;
         }
-
-
+        editor.apply();
     }
 
 
